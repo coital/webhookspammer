@@ -1,6 +1,5 @@
 import requests, os, time, ctypes
 
-
 def clear():
     if os.name != 'nt':
         os.system('clear')
@@ -19,14 +18,14 @@ def whsend(hook: str, name: str, content: str, s: bool):
         sent = 0
         failed = 0
         rl = 0
-        while True:
+        while failed < 20:
             r = requests.post(hook, { "content": content, "username": name })
             try:
                 if r.json()["retry_after"]:
-                    print(f'Getting rate limited, sleeping for {r.json()["retry_after"]/1000}s.')
+                    print(f'Getting rate limited, sleeping for {r.json()["retry_after"] / 1000}s.')
                     rl += 1
                     ititle(sent, failed, rl)
-                    time.sleep(r.json()["retry_after"]/1000)
+                    time.sleep(r.json()["retry_after"] / 1000)
             except:
                 if r.status_code == 204:
                     sent += 1
@@ -35,7 +34,9 @@ def whsend(hook: str, name: str, content: str, s: bool):
                 else:
                     failed += 1
                     ititle(sent, failed, rl)
-                    print(f'Failed | {sent} times.')
+                    print(f'Failed | {failed} times.')
+        clear()
+        exit(f'The webhook most likely does not exist anymore.\nStatistics:\nSuccessful posts: {sent}\nFailed posts: {failed}\nRate Limits: {rl}')
     else:
         r = requests.post(hook, { "content": content, "username": name })
         if r.status_code == 204:
@@ -62,6 +63,4 @@ if sp.lower() == 'y':
     whsend(url, un, c, True)
 else:
     whsend(url, un, c, False)
-    
-    
     
